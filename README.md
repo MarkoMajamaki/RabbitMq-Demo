@@ -1,4 +1,6 @@
-# Demo app for Istio Kubernetes deployment using ASP.NET microservices
+# Demo app for RabbitMq Kubernetes deployment using ASP.NET microservices
+
+**Repo is still under heavy development and some features might not work!**
 
 ## Deploy to Kind
 ```bash
