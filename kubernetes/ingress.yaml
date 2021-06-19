@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress
+  namespace: rabbitmq-demo
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  tls:
+  - secretName: ingress-tls-secret
+    hosts:
+      - "localhost"
+  rules:
+    - http:
+        paths:
+        - path: /service1/(.*)
+          pathType: Prefix
+          backend:
+            service:
+              name: service1
+              port:
+                number: 80
+        - path: /service2/(.*)
+          pathType: Prefix
+          backend:
+            service:
+              name: service2
+              port:
+                number: 80

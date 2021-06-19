@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rabbitmq-config
+  namespace: rabbitmq-demo
+data:
+  RabbitMq__HostName: "rabbitmq.rabbitmq-demo.svc.cluster.local"
+  RabbitMq__Port: "5672"
+  RabbitMq__UserName: "guest"
+  RabbitMq__Password: "guest"

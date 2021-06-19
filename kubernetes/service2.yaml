@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: service2
+  namespace: rabbitmq-demo
 spec:
   selector:
     matchLabels:
@@ -13,18 +14,22 @@ spec:
     spec:
       containers:
       - name: service2
-        image: istio_demo/service2:v1
+        image: rabbitmq_demo/service2:v1
         resources:
           limits:
             memory: "128Mi"
             cpu: "500m"
         ports:
         - containerPort: 5000
+        envFrom:
+        - configMapRef:
+            name: rabbitmq-config
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: service2
+  namespace: rabbitmq-demo
   labels:
     app: service2
 spec:
