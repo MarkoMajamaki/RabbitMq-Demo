@@ -9,9 +9,6 @@ deploy()
     # Build images into minikube
     eval $(minikube docker-env)
 
-    # Pull RabbitMq
-    docker pull rabbitmq:3.8-management
-    
     # Build services
     sh deploy/build-services.sh
 

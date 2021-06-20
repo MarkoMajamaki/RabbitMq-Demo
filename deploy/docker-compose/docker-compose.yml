@@ -6,7 +6,7 @@ services:
     image: nginx:latest
     container_name: nginx_gateway
     ports:
-      - "8080:80"
+      - "80:80"
     depends_on: 
       - service1
       - service2
@@ -16,8 +16,8 @@ services:
   service1:
     image: rabbitmq_demo/service1:v1
     build:
-      context: .
-      dockerfile: ../../services/service1/Dockerfile
+      context: ../../
+      dockerfile: services/Service1/Dockerfile
     ports:
       - 5000:5000
     environment:
@@ -32,8 +32,8 @@ services:
   service2:
     image: rabbitmq_demo/service2:v1
     build:
-      context: .
-      dockerfile: ../../services/Service2/Dockerfile
+      context: ../../
+      dockerfile: services/Service2/Dockerfile
     ports:
       - 5001:5000
     environment:
@@ -46,8 +46,8 @@ services:
   service3:
     image: rabbitmq_demo/service3:v1
     build:
-      context: .
-      dockerfile: ../../services/Service3/Dockerfile
+      context: ../../
+      dockerfile: services/Service3/Dockerfile
     ports:
       - 5002:5000
     environment:
