@@ -1,15 +1,10 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Messaging;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Service1.Services;
 
@@ -36,6 +31,9 @@ namespace Service1
             {
                 c.BaseAddress = new Uri(Configuration.GetValue<string>("Service3Uri"));    
             });
+            
+            services.Configure<RabbitMqSettings>(Configuration.GetSection("RabbitMq"));  
+            services.AddTransient<IPubSubService, PubSubService>();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>

@@ -4,3 +4,5 @@ services/Service2/bin/
 services/Service2/obj/
 services/Service3/bin/
 services/Service3/obj/
+services/Messaging/obj/
+services/Messaging/bin/
