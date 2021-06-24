@@ -12,6 +12,9 @@ deploy()
     kind load docker-image rabbitmq_demo/service3:v1 --name rabbitmq-demo
     kind load docker-image rabbitmq:3.8-management --name rabbitmq-demo
 
+    # Install RabbitMq cluster operator 
+    kubectl rabbitmq install-cluster-operator
+
     # Deploy services
     sh deploy/deploy-services.sh    
 

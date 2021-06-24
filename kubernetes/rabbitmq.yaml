@@ -8,3 +8,11 @@ data:
   RabbitMq__Port: "5672"
   RabbitMq__UserName: "guest"
   RabbitMq__Password: "guest"
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: RabbitmqCluster
+metadata:
+    name: rabbitmq
+    namespace: rabbitmq-demo
+spec:
+  replicas: 1
