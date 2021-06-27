@@ -6,7 +6,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using Service1.Services;
 
 namespace Service1
 {
@@ -22,18 +21,12 @@ namespace Service1
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddHttpClient<ITestService2, TestService2>(c => 
-            {
-                c.BaseAddress = new Uri(Configuration.GetValue<string>("Service2Uri"));    
-            });
-
-            services.AddHttpClient<ITestService3, TestService3>(c => 
-            {
-                c.BaseAddress = new Uri(Configuration.GetValue<string>("Service3Uri"));    
-            });
-            
             services.Configure<RabbitMqSettings>(Configuration.GetSection("RabbitMq"));  
-            services.AddTransient<IPubSubService, PubSubService>();
+            services.AddSingleton<IRabbitMqConnection, RabbitMqConnection>();
+            services.AddTransient<IQueueProducer, QueueProducer>();
+            services.AddTransient<IDirectExchangeProducer, DirectExchangeProducer>();
+            services.AddTransient<ITopicExchangeProducer, TopicExchangeProducer>();
+            services.AddTransient<IFanoutExchangeProducer, FanoutExchangeProducer>();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>

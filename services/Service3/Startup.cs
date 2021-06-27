@@ -27,10 +27,14 @@ namespace Service3
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddHostedService<ReceiveMessagesService>();
-
             services.Configure<RabbitMqSettings>(Configuration.GetSection("RabbitMq"));  
-            services.AddTransient<IPubSubService, PubSubService>();
+            services.AddSingleton<IRabbitMqConnection, RabbitMqConnection>();
+            services.AddTransient<IQueueConsumer, QueueConsumer>();
+            services.AddTransient<IDirectExchangeConsumer, DirectExchangeConsumer>();
+            services.AddTransient<ITopicExchangeConsumer, TopicExchangeConsumer>();
+            services.AddTransient<IFanoutExchangeConsumer, FanoutExchangeConsumer>();
+
+            services.AddHostedService<ReceiveMessagesService>();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>

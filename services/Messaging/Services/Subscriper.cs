@@ -5,4 +5,13 @@ using RabbitMQ.Client;
 
 namespace Messaging
 {
+    interface ISubscriber
+    {
+        
+    }
+
+    public class Subscriber : ISubscriber
+    {
+
+    }
 }

@@ -5,4 +5,13 @@ using RabbitMQ.Client;
 
 namespace Messaging
 {
+    interface IPublisher
+    {
+        
+    }
+
+    public class Publisher : IPublisher
+    {
+
+    }
 }
