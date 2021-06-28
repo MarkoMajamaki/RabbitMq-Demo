@@ -22,11 +22,8 @@ namespace Service1
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<RabbitMqSettings>(Configuration.GetSection("RabbitMq"));  
-            services.AddSingleton<IRabbitMqConnection, RabbitMqConnection>();
-            services.AddTransient<IQueueProducer, QueueProducer>();
-            services.AddTransient<IDirectExchangeProducer, DirectExchangeProducer>();
-            services.AddTransient<ITopicExchangeProducer, TopicExchangeProducer>();
-            services.AddTransient<IFanoutExchangeProducer, FanoutExchangeProducer>();
+            services.AddSingleton<IConnectionProvider, ConnectionProvider>();
+            services.AddTransient<IPublisher, Publisher>();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>

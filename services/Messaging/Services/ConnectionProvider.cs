@@ -5,21 +5,21 @@ using RabbitMQ.Client;
 
 namespace Messaging
 {
-    public interface IRabbitMqConnection
+    public interface IConnectionProvider
     {
         IConnection Connect();
         void Close();
     }
 
-    public class RabbitMqConnection : IRabbitMqConnection
+    public class ConnectionProvider : IConnectionProvider
     {
         private RabbitMqSettings _rabbitMqOptions;
         private readonly ILogger _logger;
         private IConnection _connection;
 
-        public RabbitMqConnection(
+        public ConnectionProvider(
             IOptions<RabbitMqSettings> rabbitMqOptions,
-            ILogger<RabbitMqConnection> logger)
+            ILogger<ConnectionProvider> logger)
         {
             _rabbitMqOptions = rabbitMqOptions.Value;            
             _logger = logger;

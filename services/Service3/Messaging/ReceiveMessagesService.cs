@@ -1,3 +1,4 @@
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Messaging;
@@ -9,50 +10,47 @@ namespace Service3
     public class ReceiveMessagesService : BackgroundService
     {
         private readonly ILogger<ReceiveMessagesService> _logger;
-        private readonly IQueueConsumer _queueConsumer;
-        private readonly IDirectExchangeConsumer _directExchangeConsumer;
-        private readonly ITopicExchangeConsumer _topicExchangeConsumer;
-        private readonly IFanoutExchangeConsumer _fanoutExchangeConsumer;
+        private readonly ISubscriber _subscriber;
 
         public ReceiveMessagesService(
             ILogger<ReceiveMessagesService> logger,
-            IQueueConsumer queueConsumer, 
-            IDirectExchangeConsumer directExchangeConsumer,
-            ITopicExchangeConsumer topicExchangeConsumer,
-            IFanoutExchangeConsumer fanoutExchangeConsumer)
+            ISubscriber subscriber)
         {
             _logger = logger;
-            _queueConsumer = queueConsumer;
-            _directExchangeConsumer = directExchangeConsumer;
-            _topicExchangeConsumer = topicExchangeConsumer;
-            _fanoutExchangeConsumer = fanoutExchangeConsumer;
+            _subscriber = subscriber;
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _queueConsumer.Subscribe("testQueue", (message) =>
+            _subscriber.Queue((message) =>
             {
-                _logger.LogDebug(message.ToString());
-            });
+                _logger.LogDebug(message);
+                return true;
+            }, "testQueue"); 
 
-            _directExchangeConsumer.Subscribe("direct-exchange", "direct-queue", "routingKey.test", (message) =>
+            _subscriber.Direct((message) =>
             {
-                _logger.LogDebug(message.ToString());
-            });
+                _logger.LogDebug(message);
+                return true;
+            }, "direct-exchange", "direct-queue", "routingKey.test");
 
-            _topicExchangeConsumer.Subscribe("topic-exchange", "topic-queue-1", "*.test", (message) =>
+            _subscriber.Topic((message) =>
             {
-                _logger.LogDebug(message.ToString());
-            });
-            _topicExchangeConsumer.Subscribe("topic-exchange", "topic-queue-2", "routingKey.*", (message) =>
-            {
-                _logger.LogDebug(message.ToString());
-            });
+                _logger.LogDebug(message);
+                return true;
+            }, "topic-exchange", "topic-queue-1", "*.test");
 
-            _fanoutExchangeConsumer.Subscribe("fanout-exchange", "fanout-queue", "", (message) =>
+            _subscriber.Topic((message) =>
             {
-                _logger.LogDebug(message.ToString());
-            });
+                _logger.LogDebug(message);
+                return true;
+            }, "topic-exchange", "topic-queue-2", "routingKey.*");
+
+            _subscriber.Fanout((message) =>
+            {
+                _logger.LogDebug(message);
+                return true;
+            }, "fanout-exchange", "fanout-queue");
 
             return Task.CompletedTask;
         }

@@ -28,11 +28,8 @@ namespace Service3
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<RabbitMqSettings>(Configuration.GetSection("RabbitMq"));  
-            services.AddSingleton<IRabbitMqConnection, RabbitMqConnection>();
-            services.AddTransient<IQueueConsumer, QueueConsumer>();
-            services.AddTransient<IDirectExchangeConsumer, DirectExchangeConsumer>();
-            services.AddTransient<ITopicExchangeConsumer, TopicExchangeConsumer>();
-            services.AddTransient<IFanoutExchangeConsumer, FanoutExchangeConsumer>();
+            services.AddSingleton<IConnectionProvider, ConnectionProvider>();
+            services.AddTransient<ISubscriber, Subscriber>();
 
             services.AddHostedService<ReceiveMessagesService>();
 

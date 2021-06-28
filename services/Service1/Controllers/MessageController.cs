@@ -1,5 +1,6 @@
 using Messaging;
 using Microsoft.AspNetCore.Mvc;
+using RabbitMQ.Client;
 
 namespace Service1.Controllers
 {
@@ -7,45 +8,35 @@ namespace Service1.Controllers
     [Route("[controller]")]
     public class MessageController : ControllerBase
     {
-        private readonly IQueueProducer _messageProducer;
-        private readonly IDirectExchangeProducer _directExchangeProducer;
-        private readonly IFanoutExchangeProducer _fanoutExchangeProducer;
-        private readonly ITopicExchangeProducer _topicExchangeProducer;
+        private readonly IPublisher _publisher;
 
-        public MessageController( 
-            IQueueProducer messageProducer,
-            IDirectExchangeProducer directExchangeProducer,
-            IFanoutExchangeProducer fanoutExchangeProducer,
-            ITopicExchangeProducer topicExchangeProducer)
+        public MessageController(IPublisher publisher)
         {
-            _messageProducer = messageProducer;
-            _directExchangeProducer = directExchangeProducer;
-            _fanoutExchangeProducer = fanoutExchangeProducer;
-            _topicExchangeProducer = topicExchangeProducer;
+            _publisher = publisher;
         }
 
         [HttpPost("QueuePublish/{message}")]
         public void QueuePublish(string message)
         {
-            _messageProducer.Publish(message, "testQueue");
+            _publisher.Queue(message: message, queue: "testQueue");
         }
 
         [HttpPost("DirectExchangePublish/{message}")]
         public void DirectExchangePublish(string message)
         {
-            _directExchangeProducer.Publish(message, "direct-exchange", "routingKey.test");
+            _publisher.Direct(message: message, exchange: "direct-exchange", routingKey: "routingKey.test");
         }
 
         [HttpPost("TopicExchangePublish/{message}")]
         public void TopicExchangePublish(string message)
         {
-            _topicExchangeProducer.Publish(message, "topic-exchange", "routingKey.test");
+            _publisher.Topic(message: message, exchange: "topic-exchange", routingKey: "routingKey.test");
         }
 
         [HttpPost("FanoutExchangePublish/{message}")]
         public void FanoutExchangePublish(string message)
         {
-            _fanoutExchangeProducer.Publish(message, "fanout-exchange", "");
+            // _publisher.Fanout(message: message, exchange: "fanout-exchange", routingKey: "", headers: {{""}});
         }
     }
 }
