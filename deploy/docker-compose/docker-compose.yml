@@ -8,32 +8,30 @@ services:
     ports:
       - "80:80"
     depends_on: 
-      - service1
-      - service2
+      - publisher
+      - subscriper
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
 
-  service1:
-    image: rabbitmq_demo/service1:v1
+  publisher:
+    image: rabbitmq_demo/publisher:v1
     build:
       context: ../../
-      dockerfile: services/Service1/Dockerfile
+      dockerfile: services/Publisher/Dockerfile
     ports:
       - 5000:5000
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - Service2Uri=http://service2:5000
-      - Service3Uri=http://service3:5000
     env_file: 
       - ./rabbitmq.env
     volumes:
       - ~/.vsdbg:/remote_debugger:rw
 
-  service2:
-    image: rabbitmq_demo/service2:v1
+  subscriper:
+    image: rabbitmq_demo/subscriper:v1
     build:
       context: ../../
-      dockerfile: services/Service2/Dockerfile
+      dockerfile: services/Subscriper/Dockerfile
     ports:
       - 5001:5000
     environment:
@@ -43,20 +41,6 @@ services:
     volumes:
       - ~/.vsdbg:/remote_debugger:rw
       
-  service3:
-    image: rabbitmq_demo/service3:v1
-    build:
-      context: ../../
-      dockerfile: services/Service3/Dockerfile
-    ports:
-      - 5002:5000
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development      
-    env_file: 
-      - ./rabbitmq.env
-    volumes:
-      - ~/.vsdbg:/remote_debugger:rw
-  
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq

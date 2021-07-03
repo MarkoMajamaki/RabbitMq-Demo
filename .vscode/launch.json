@@ -6,18 +6,18 @@
         "compounds": [
         {
             "name": "All",
-            "configurations": ["Service1", "Service2", "Service3"]
+            "configurations": ["Subscriber", "Publisher"]
         }
     ],
     "configurations": [
         {
-            "name": "Service1",
+            "name": "Subscriber",
             "type": "coreclr",
             "request": "launch",
-            "preLaunchTask": "buildService1",
-            "program": "${workspaceFolder}/services/Service1/bin/Debug/net5.0/Service1.dll",
+            "preLaunchTask": "buildSubscriber",
+            "program": "${workspaceFolder}/services/Subscriber/bin/Debug/net5.0/Subscriber.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/services/Service1",
+            "cwd": "${workspaceFolder}/services/Subscriber",
             "stopAtEntry": false,
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
@@ -27,29 +27,13 @@
             }
         },
         {
-            "name": "Service2",
+            "name": "Publisher",
             "type": "coreclr",
             "request": "launch",
-            "preLaunchTask": "buildService2",
-            "program": "${workspaceFolder}/services/Service2/bin/Debug/net5.0/Service2.dll",
+            "preLaunchTask": "buildPublisher",
+            "program": "${workspaceFolder}/services/Publisher/bin/Debug/net5.0/Publisher.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/services/Service2",
-            "stopAtEntry": false,
-            "env": {
-                "ASPNETCORE_ENVIRONMENT": "Development"
-            },
-            "launchBrowser": {
-                "enabled": false,                
-            }
-        },
-        {
-            "name": "Service3",
-            "type": "coreclr",
-            "request": "launch",
-            "preLaunchTask": "buildService3",
-            "program": "${workspaceFolder}/services/Service3/bin/Debug/net5.0/Service3.dll",
-            "args": [],
-            "cwd": "${workspaceFolder}/services/Service3",
+            "cwd": "${workspaceFolder}/services/Publisher",
             "stopAtEntry": false,
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development"

@@ -4,36 +4,24 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "buildService1",
+            "label": "buildPublisher",
             "command": "dotnet",
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/services/Service1/Service1.csproj",
+                "${workspaceFolder}/services/Publisher/Publisher.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
             "problemMatcher": "$msCompile"
         },
         {
-            "label": "buildService2",
+            "label": "buildSubscriber",
             "command": "dotnet",
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/services/Service2/Service2.csproj",
-                "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary"
-            ],
-            "problemMatcher": "$msCompile"
-        },
-        {
-            "label": "buildService3",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "build",
-                "${workspaceFolder}/services/Service3/Service3.csproj",
+                "${workspaceFolder}/services/Subscriber/Subscriber.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],

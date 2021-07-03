@@ -7,9 +7,8 @@ deploy()
     sh deploy/build-services.sh
 
     # Load images into cluster
-    kind load docker-image rabbitmq_demo/service1:v1 --name rabbitmq-demo
-    kind load docker-image rabbitmq_demo/service2:v1 --name rabbitmq-demo
-    kind load docker-image rabbitmq_demo/service3:v1 --name rabbitmq-demo
+    kind load docker-image rabbitmq_demo/publisher:v1 --name rabbitmq-demo
+    kind load docker-image rabbitmq_demo/subscriber:v1 --name rabbitmq-demo
     kind load docker-image rabbitmq:3.8-management --name rabbitmq-demo
 
     # Install RabbitMq cluster operator 

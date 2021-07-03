@@ -1,8 +1,6 @@
-services/Service1/bin/
-services/Service1/obj/
-services/Service2/bin/
-services/Service2/obj/
-services/Service3/bin/
-services/Service3/obj/
-services/Messaging/obj/
-services/Messaging/bin/
+services/Subscriber/bin/
+services/Subscriber/obj/
+services/Publisher/bin/
+services/Publisher/obj/
+services/Common/obj/
+services/Common/bin/
