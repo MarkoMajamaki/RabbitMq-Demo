@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Messaging;
 using Microsoft.AspNetCore.Mvc;
 using RabbitMQ.Client;
@@ -18,25 +19,37 @@ namespace Service1.Controllers
         [HttpPost("QueuePublish/{message}")]
         public void QueuePublish(string message)
         {
-            _publisher.Queue(message: message, queue: "testQueue");
+            _publisher.Queue(message, "simple-queue");
         }
 
         [HttpPost("DirectExchangePublish/{message}")]
         public void DirectExchangePublish(string message)
         {
-            _publisher.Direct(message: message, exchange: "direct-exchange", routingKey: "routingKey.test");
+            _publisher.Direct(message, "direct-exchange", "routingKey.test");
         }
 
         [HttpPost("TopicExchangePublish/{message}")]
         public void TopicExchangePublish(string message)
         {
-            _publisher.Topic(message: message, exchange: "topic-exchange", routingKey: "routingKey.test");
+            _publisher.Topic(message, "topic-exchange", "routingKey.test");
         }
 
         [HttpPost("FanoutExchangePublish/{message}")]
         public void FanoutExchangePublish(string message)
         {
-            // _publisher.Fanout(message: message, exchange: "fanout-exchange", routingKey: "", headers: {{""}});
+            var headers = new Dictionary<string, object>();
+            headers.Add("account", "update");
+
+            _publisher.Fanout(message, "fanout-exchange", "account.new", headers);
+        }
+
+        [HttpPost("HeaderExchangePublish/{message}")]
+        public void HeaderExchangePublish(string message)
+        {
+            var headers = new Dictionary<string, object>();
+            headers.Add("account", "update");
+
+            _publisher.Header(message, "header-exchange", headers);
         }
     }
 }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,31 +27,39 @@ namespace Service3
             {
                 _logger.LogDebug(message);
                 return true;
-            }, "testQueue"); 
+            }, "simple-queue"); 
 
             _subscriber.Direct((message) =>
             {
                 _logger.LogDebug(message);
                 return true;
-            }, "direct-exchange", "direct-queue", "routingKey.test");
+            }, "direct-queue", "direct-exchange", "routingKey.test");
 
             _subscriber.Topic((message) =>
             {
                 _logger.LogDebug(message);
                 return true;
-            }, "topic-exchange", "topic-queue-1", "*.test");
+            }, "topic-queue-1", "topic-exchange", "*.test");
 
             _subscriber.Topic((message) =>
             {
                 _logger.LogDebug(message);
                 return true;
-            }, "topic-exchange", "topic-queue-2", "routingKey.*");
+            }, "topic-queue-2", "topic-exchange", "routingKey.*");
 
             _subscriber.Fanout((message) =>
             {
                 _logger.LogDebug(message);
                 return true;
-            }, "fanout-exchange", "fanout-queue");
+            }, "fanout-queue", "fanout-exchange");
+
+            var header = new Dictionary<string, object> { { "account", "update" } };
+
+            _subscriber.Headers((message) =>
+            {
+                _logger.LogDebug(message);
+                return true;
+            }, "header-queue", "header-exchange", header);
 
             return Task.CompletedTask;
         }

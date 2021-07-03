@@ -16,6 +16,9 @@ namespace Messaging
         void Fanout(object message, string exchange, string routingKey, IDictionary<string, object> headers, int timeToLive = 30000);
     }
 
+    /// <summary>
+    /// Publish message to RabbitMQ
+    /// </summary>
     public class Publisher : IPublisher
     {
         private IConnectionProvider _connectionProvider;
@@ -30,7 +33,7 @@ namespace Messaging
         }
 
         /// <summary>
-        /// Publish message to queue
+        /// Publish message to queue with default exchange
         /// </summary>
         public void Queue(
             object message,
@@ -49,7 +52,7 @@ namespace Messaging
         }
 
         /// <summary>
-        /// Publish message using direct routing
+        /// Publish message to single queue which has same exchange and routing key
         /// </summary>
         public void Direct(
             object message,
@@ -71,7 +74,8 @@ namespace Messaging
         }
 
         /// <summary>
-        /// Publish message using topic routing
+        /// Publish message to all queues which has same exchange and routing key. Topic exchange also
+        /// support wildcard matching (* and #) in routing key.
         /// </summary>
         public void Topic(
             object message,
@@ -88,7 +92,7 @@ namespace Messaging
         }
 
         /// <summary>
-        /// Publish message using header routing
+        /// Publish message to all queues which has same exchange and all or any headers. 
         /// </summary>
         public void Header(
             object message,
@@ -105,7 +109,7 @@ namespace Messaging
         }
 
         /// <summary>
-        /// Publish message using fanout routing
+        /// Publish message to all queues which are bound to exchange ignoring routing keys
         /// </summary>
         public void Fanout(
             object message,
@@ -169,8 +173,8 @@ namespace Messaging
                 properties.Expiration = timeToLive.ToString();
 
                 model.BasicPublish(
-                    exchange: exchange,
-                    routingKey: routingKey,
+                    exchange: exchange ?? string.Empty,
+                    routingKey: routingKey ?? string.Empty,
                     basicProperties: properties,
                     body: body);
 

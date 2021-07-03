@@ -17,7 +17,7 @@ namespace Messaging
     }
 
     /// <summary>
-    /// Subscribe message from RabbitMq
+    /// Subscribe message from RabbitMQ
     /// </summary>
     public class Subscriber : ISubscriber
     {
@@ -34,9 +34,9 @@ namespace Messaging
         }
 
         /// <summary>
-        /// Subscrible queue
+        /// Subscribe queue with default exchange without routing key
         /// </summary>
-        public void Queue(
+       public void Queue(
             Func<string, bool> callback,
             string queue, 
             ushort prefetchSize = 10)
@@ -48,6 +48,9 @@ namespace Messaging
             );
         }
 
+        /// <summary>
+        /// Subscribe message which has same exchange and routing key
+        /// </summary>
         public void Direct(
             Func<string, bool> callback,
             string queue,
@@ -66,6 +69,10 @@ namespace Messaging
                 timeToLive: timeToLive);
         }
 
+        /// <summary>
+        /// Subscribe message which has same exchange and routing key. Topic exchange also
+        /// support wildcard matching (* and #) in routing key.
+        /// </summary>
         public void Topic(
             Func<string, bool> callback,
             string queue,
@@ -84,6 +91,9 @@ namespace Messaging
                 timeToLive: timeToLive);
         }
 
+        /// <summary>
+        /// Subscribe message which has same exchange and all or any headers. 
+        /// </summary>
         public void Headers(
             Func<string, bool> callback,
             string queue,
@@ -102,6 +112,9 @@ namespace Messaging
                 timeToLive: timeToLive);
         }
 
+        /// <summary>
+        /// Subscribe message which are bound to exchange ignoring routing keys
+        /// </summary>
         public void Fanout(
             Func<string, bool> callback,
             string queue,
@@ -119,7 +132,7 @@ namespace Messaging
         }
 
         /// <summary>
-        /// Internal implementation
+        /// Subscribe RabbitMq message
         /// </summary>
         private void SubscribeInternal(
             Func<string, bool> callback,
@@ -135,6 +148,14 @@ namespace Messaging
 
             var model = connection.CreateModel();
 
+            model.QueueDeclare(
+                queue: queue,
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null
+            );
+
             if (exchange != null)
             {
                 model.ExchangeDeclare(
@@ -145,17 +166,10 @@ namespace Messaging
                         {"x-message-ttl", timeToLive }
                     }
                 );
+
+                model.QueueBind(queue, exchange, routingKey ?? string.Empty, header);
             }
 
-            model.QueueDeclare(
-                queue: queue,
-                durable: true,
-                exclusive: false,
-                autoDelete: false,
-                arguments: null
-            );
-
-            model.QueueBind(queue, exchange, routingKey ?? string.Empty, header);
             model.BasicQos(0, prefetchSize, false);
 
             _consumer = new EventingBasicConsumer(model);
@@ -175,7 +189,6 @@ namespace Messaging
                 {
                     _logger.LogDebug("Subscribe failed!");
                 }
-
             };
 
             model.BasicConsume(
