@@ -71,14 +71,22 @@ http://localhost:15672
 ```
 
 ## Test
+
+### When run with Visual Studio Code
 ```bash
-http://rabbitmq-demo.com/service1/test
-http://rabbitmq-demo.com/service1/test/service2
-http://rabbitmq-demo.com/service1/test/service3
-http://rabbitmq-demo.com/service2/test
+https://localhost:5000/Message/QueuePublish/test-message
+https://localhost:5000/Message/DirectExchangePublish/test-message
+https://localhost:5000/Message/TopicExchangePublish/test-message
+https://localhost:5000/Message/FanoutExchangePublish/test-message
+https://localhost:5000/Message/HeaderExchangePublish/test-message
 ```
 
-Should not work! Access allowed only throught service1!
+### When run in local K8S cluster or docker compose
+Check logs from Subscriber microservice and run
 ```bash
-http://rabbitmq-demo.com/service3/test
+https://rabbitmq-demo.com/publisher/QueuePublish/test-message
+https://rabbitmq-demo.com/publisher/DirectExchangePublish/test-message
+https://rabbitmq-demo.com/publisher/TopicExchangePublish/test-message
+https://rabbitmq-demo.com/publisher/FanoutExchangePublish/test-message
+https://rabbitmq-demo.com/publisher/HeaderExchangePublish/test-message
 ```
