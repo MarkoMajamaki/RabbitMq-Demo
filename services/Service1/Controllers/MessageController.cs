@@ -47,7 +47,7 @@ namespace Service1.Controllers
         public void HeaderExchangePublish(string message)
         {
             var headers = new Dictionary<string, object>();
-            headers.Add("account", "update");
+            headers.Add("account", "new");
 
             _publisher.Header(message, "header-exchange", headers);
         }

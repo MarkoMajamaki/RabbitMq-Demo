@@ -12,7 +12,7 @@ namespace Messaging
         void Queue(Func<string, bool> callback, string queue,  ushort prefetchSize = 10);
         void Direct(Func<string, bool> callback, string queue, string exchange, string routingKey, ushort prefetchSize = 10, int timeToLive = 30000);
         void Topic(Func<string, bool> callback, string queue, string exchange, string routingKey, ushort prefetchSize = 10, int timeToLive = 30000);
-        void Headers(Func<string, bool> callback, string queue, string exchange, Dictionary<string, object> header, ushort prefetchSize = 10, int timeToLive = 30000);
+        void Headers(Func<string, bool> callback, string queue, string exchange, Dictionary<string, object> header, bool shouldAllHeadersMatch = false, ushort prefetchSize = 10, int timeToLive = 30000);
         void Fanout(Func<string, bool> callback, string queue, string exchange, ushort prefetchSize = 10, int timeToLive = 30000);
     }
 
@@ -99,15 +99,26 @@ namespace Messaging
             string queue,
             string exchange,
             Dictionary<string, object> header,
+            bool shouldAllHeadersMatch = false,
             ushort prefetchSize = 10,
             int timeToLive = 30000)
         {
+            Dictionary<string, object> actualHeader = new Dictionary<string, object>(header);
+            if (shouldAllHeadersMatch)
+            {
+                actualHeader.Add("x-match", "all");
+            }
+            else
+            {
+                actualHeader.Add("x-match", "any");
+            }
+            
             SubscribeInternal(
                 callback: callback,
                 queue: queue,
                 exchange: exchange,
                 exchangeType: ExchangeType.Headers,
-                header: header,
+                header: actualHeader,
                 prefetchSize: prefetchSize,
                 timeToLive: timeToLive);
         }

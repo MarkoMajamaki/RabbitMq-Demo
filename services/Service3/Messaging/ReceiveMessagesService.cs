@@ -59,7 +59,7 @@ namespace Service3
             {
                 _logger.LogDebug(message);
                 return true;
-            }, "header-queue", "header-exchange", header);
+            }, "header-queue", "header-exchange", header, true);
 
             return Task.CompletedTask;
         }
