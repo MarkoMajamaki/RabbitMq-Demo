@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -14,6 +16,7 @@ namespace Common
         void Topic(Func<string, bool> callback, string queue, string exchange, string routingKey, ushort prefetchSize = 10, int timeToLive = 30000);
         void Headers(Func<string, bool> callback, string queue, string exchange, Dictionary<string, object> header, bool shouldAllHeadersMatch = false, ushort prefetchSize = 10, int timeToLive = 30000);
         void Fanout(Func<string, bool> callback, string queue, string exchange, ushort prefetchSize = 10, int timeToLive = 30000);
+        void Rpc(Func<string, string> callback, string queue);
     }
 
     /// <summary>
@@ -140,6 +143,71 @@ namespace Common
                 exchangeType: ExchangeType.Fanout,
                 prefetchSize: prefetchSize,
                 timeToLive: timeToLive);
+        }
+
+        /// <summary>
+        /// Subcriber for rpc call
+        /// </summary>
+        public void Rpc(Func<string, string> callback, string queue)
+        {
+            // Get RabbitMQ connection
+            IConnection connection = _connectionProvider.Connect();
+            var channel = connection.CreateModel();
+
+            // Decleare queue to receive message
+            channel.QueueDeclare(
+                queue: queue, 
+                durable: false,
+                exclusive: false, 
+                autoDelete: false, 
+                arguments: null);
+
+            channel.BasicQos(0, 1, false);
+
+            // Listen queue to receive message
+            _consumer = new EventingBasicConsumer(channel);
+            channel.BasicConsume(
+                queue: queue,
+                autoAck: false, 
+                consumer: _consumer);
+
+            _consumer.Received += (model, ea) =>
+            {
+                string response = null;
+
+                var body = ea.Body.ToArray();
+                var props = ea.BasicProperties;
+
+                // Create reply props with correlation id from message received
+                var replyProps = channel.CreateBasicProperties();
+                replyProps.CorrelationId = props.CorrelationId;
+
+                var message = Encoding.UTF8.GetString(body);
+
+                try
+                {
+                    response = callback(message);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Message {message} in queue {queue} receive callback execution failed! " + e.Message);
+                }
+                finally
+                {
+                    var responseBytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(response));
+
+                    // Send reply message
+                    channel.BasicPublish(
+                        exchange: "", 
+                        routingKey: props.ReplyTo,
+                        basicProperties: replyProps, 
+                        body: responseBytes);
+
+                    channel.BasicAck(
+                        deliveryTag: ea.DeliveryTag,
+                        multiple: false);
+                }
+            };
         }
 
         /// <summary>

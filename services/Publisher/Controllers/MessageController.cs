@@ -1,6 +1,7 @@
 using Common;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 
 namespace Publisher.Controllers
@@ -10,10 +11,14 @@ namespace Publisher.Controllers
     public class MessageController : ControllerBase
     {
         private readonly IPublisher _publisher;
+        private readonly ILogger _logger;
 
-        public MessageController(IPublisher publisher)
+        public MessageController(
+            IPublisher publisher, 
+            ILogger<MessageController> logger)
         {
             _publisher = publisher;
+            _logger = logger;
         }
 
         [HttpPost("QueuePublish/{message}")]
@@ -50,6 +55,14 @@ namespace Publisher.Controllers
             headers.Add("account", "new");
 
             _publisher.Header(message, "header-exchange", headers);
+        }
+
+        [HttpPost("Rpc/{message}")]
+        public async void Rpc(string message)
+        {
+            var response = await _publisher.Rpc(message, "rpc-queue");
+
+            _logger.LogDebug($"Rpc response: {response}");
         }
     }
 }

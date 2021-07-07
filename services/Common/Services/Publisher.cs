@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
 
 namespace Common
 {
@@ -14,6 +16,7 @@ namespace Common
         void Topic(object message, string exchange, string routingKey, int timeToLive = 30000);
         void Header(object message, string exchange, IDictionary<string, object> headers, int timeToLive = 30000);
         void Fanout(object message, string exchange, string routingKey, IDictionary<string, object> headers, int timeToLive = 30000);
+        Task<object> Rpc(object message, string queue);
     }
 
     /// <summary>
@@ -23,6 +26,7 @@ namespace Common
     {
         private IConnectionProvider _connectionProvider;
         private readonly ILogger _logger;
+        private EventingBasicConsumer _consumer;
 
         public Publisher(
             IConnectionProvider connectionProvider,
@@ -125,6 +129,65 @@ namespace Common
                 routingKey: routingKey,
                 headers: headers,
                 timeToLive: timeToLive);
+        }
+
+        /// <summary>
+        /// Do rpc call
+        /// </summary>
+        public async Task<object> Rpc(object message, string queue)
+        {
+            // Get RabbitMQ connection
+            IConnection connection = _connectionProvider.Connect();
+            var model = connection.CreateModel();
+            
+            IBasicProperties props = model.CreateBasicProperties();
+
+            // Generate random correlation id
+            var correlationId = Guid.NewGuid().ToString();
+            props.CorrelationId = correlationId;
+
+            // Set response queue name
+            string replyQueueName = model.QueueDeclare().QueueName;
+            props.ReplyTo = replyQueueName;
+
+            // Response message queue
+            TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
+
+            // Listen message received to response queue
+            _consumer = new EventingBasicConsumer(model);
+            _consumer.Received += (model, ea) =>
+            {
+                var body = ea.Body.ToArray();
+                var response = Encoding.UTF8.GetString(body);
+                
+                // Add  to response queue if correlation id match
+                if (ea.BasicProperties.CorrelationId == correlationId)
+                {
+                    tcs.SetResult(response);
+                }
+                else
+                {
+                    tcs.SetCanceled();
+                }
+            };
+
+            // Start listening reply queue
+            model.BasicConsume(
+                consumer: _consumer,
+                queue: replyQueueName,
+                autoAck: true);
+                
+            var body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message));
+
+            // Send message
+            model.BasicPublish(
+                exchange: "",
+                routingKey: queue,
+                basicProperties: props,
+                body: body);
+
+            // Get reseponse from queue
+            return await tcs.Task;
         }
 
         /// <summary>

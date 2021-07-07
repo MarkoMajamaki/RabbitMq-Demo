@@ -61,6 +61,12 @@ namespace Subscriber
                 return true;
             }, "header-queue", "header-exchange", header, true);
 
+            _subscriber.Rpc((message) =>
+            {
+                _logger.LogDebug(message);
+                return "RPC message handled!";
+            }, "rpc-queue");
+
             return Task.CompletedTask;
         }
     }
