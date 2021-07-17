@@ -9,7 +9,7 @@ services:
       - "80:80"
     depends_on: 
       - publisher
-      - subscriper
+      - subscriber
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
 
@@ -27,11 +27,11 @@ services:
     volumes:
       - ~/.vsdbg:/remote_debugger:rw
 
-  subscriper:
-    image: rabbitmq_demo/subscriper:v1
+  subscriber:
+    image: rabbitmq_demo/subscriber:v1
     build:
       context: ../../
-      dockerfile: services/Subscriper/Dockerfile
+      dockerfile: services/Subscriber/Dockerfile
     ports:
       - 5001:5000
     environment:

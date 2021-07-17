@@ -11,12 +11,12 @@ namespace Common
 {
     public interface ISubscriber
     {
-        void Queue(Func<string, bool> callback, string queue,  ushort prefetchSize = 10);
-        void Direct(Func<string, bool> callback, string queue, string exchange, string routingKey, ushort prefetchSize = 10, int timeToLive = 30000);
-        void Topic(Func<string, bool> callback, string queue, string exchange, string routingKey, ushort prefetchSize = 10, int timeToLive = 30000);
-        void Headers(Func<string, bool> callback, string queue, string exchange, Dictionary<string, object> header, bool shouldAllHeadersMatch = false, ushort prefetchSize = 10, int timeToLive = 30000);
-        void Fanout(Func<string, bool> callback, string queue, string exchange, ushort prefetchSize = 10, int timeToLive = 30000);
-        void Rpc(Func<string, string> callback, string queue);
+        void Queue(Func<object, bool> callback, string queue,  ushort prefetchSize = 10);
+        void Direct(Func<object, bool> callback, string queue, string exchange, string routingKey, ushort prefetchSize = 10, int timeToLive = 30000);
+        void Topic(Func<object, bool> callback, string queue, string exchange, string routingKey, ushort prefetchSize = 10, int timeToLive = 30000);
+        void Headers(Func<object, bool> callback, string queue, string exchange, Dictionary<string, object> header, bool shouldAllHeadersMatch = false, ushort prefetchSize = 10, int timeToLive = 30000);
+        void Fanout(Func<object, bool> callback, string queue, string exchange, ushort prefetchSize = 10, int timeToLive = 30000);
+        void Rpc(Func<object, object> callback, string queue);
     }
 
     /// <summary>
@@ -26,7 +26,6 @@ namespace Common
     {
         private IConnectionProvider _connectionProvider;
         private readonly ILogger _logger;
-        private EventingBasicConsumer _consumer;
 
         public Subscriber(
             IConnectionProvider connectionProvider,
@@ -40,7 +39,7 @@ namespace Common
         /// Subscribe queue with default exchange without routing key
         /// </summary>
        public void Queue(
-            Func<string, bool> callback,
+            Func<object, bool> callback,
             string queue, 
             ushort prefetchSize = 10)
         {
@@ -55,7 +54,7 @@ namespace Common
         /// Subscribe message which has same exchange and routing key
         /// </summary>
         public void Direct(
-            Func<string, bool> callback,
+            Func<object, bool> callback,
             string queue,
             string exchange,
             string routingKey,
@@ -77,7 +76,7 @@ namespace Common
         /// support wildcard matching (* and #) in routing key.
         /// </summary>
         public void Topic(
-            Func<string, bool> callback,
+            Func<object, bool> callback,
             string queue,
             string exchange,
             string routingKey,
@@ -98,7 +97,7 @@ namespace Common
         /// Subscribe message which has same exchange and all or any headers. 
         /// </summary>
         public void Headers(
-            Func<string, bool> callback,
+            Func<object, bool> callback,
             string queue,
             string exchange,
             Dictionary<string, object> header,
@@ -130,7 +129,7 @@ namespace Common
         /// Subscribe message which are bound to exchange ignoring routing keys
         /// </summary>
         public void Fanout(
-            Func<string, bool> callback,
+            Func<object, bool> callback,
             string queue,
             string exchange,
             ushort prefetchSize = 10,
@@ -148,7 +147,9 @@ namespace Common
         /// <summary>
         /// Subcriber for rpc call
         /// </summary>
-        public void Rpc(Func<string, string> callback, string queue)
+        public void Rpc(
+            Func<object, object> callback,
+            string queue)
         {
             // Get RabbitMQ connection
             IConnection connection = _connectionProvider.Connect();
@@ -165,16 +166,14 @@ namespace Common
             channel.BasicQos(0, 1, false);
 
             // Listen queue to receive message
-            _consumer = new EventingBasicConsumer(channel);
+            var consumer = new EventingBasicConsumer(channel);
             channel.BasicConsume(
                 queue: queue,
                 autoAck: false, 
-                consumer: _consumer);
+                consumer: consumer);
 
-            _consumer.Received += (model, ea) =>
+            consumer.Received += (model, ea) =>
             {
-                string response = null;
-
                 var body = ea.Body.ToArray();
                 var props = ea.BasicProperties;
 
@@ -183,6 +182,7 @@ namespace Common
                 replyProps.CorrelationId = props.CorrelationId;
 
                 var message = Encoding.UTF8.GetString(body);
+                object response = null;
 
                 try
                 {
@@ -225,9 +225,9 @@ namespace Common
         {
             IConnection connection = _connectionProvider.Connect();
 
-            var model = connection.CreateModel();
+            var channel = connection.CreateModel();
 
-            model.QueueDeclare(
+            channel.QueueDeclare(
                 queue: queue,
                 durable: true,
                 exclusive: false,
@@ -237,7 +237,7 @@ namespace Common
 
             if (exchange != null)
             {
-                model.ExchangeDeclare(
+                channel.ExchangeDeclare(
                     exchange: exchange,
                     type: exchangeType,
                     arguments: new Dictionary<string, object>
@@ -246,14 +246,13 @@ namespace Common
                     }
                 );
 
-                model.QueueBind(queue, exchange, routingKey ?? string.Empty, header);
+                channel.QueueBind(queue, exchange, routingKey ?? string.Empty, header);
             }
 
-            model.BasicQos(0, prefetchSize, false);
+            channel.BasicQos(0, prefetchSize, false);
 
-            _consumer = new EventingBasicConsumer(model);
-
-            _consumer.Received += (sender, e) =>
+            var consumer = new EventingBasicConsumer(channel);
+            consumer.Received += (sender, e) =>
             {
                 var body = e.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
@@ -261,7 +260,7 @@ namespace Common
 
                 if (success)
                 {
-                    model.BasicAck(e.DeliveryTag, true);
+                    channel.BasicAck(e.DeliveryTag, true);
                     _logger.LogDebug("Subscribe successed!");
                 }
                 else
@@ -270,10 +269,10 @@ namespace Common
                 }
             };
 
-            model.BasicConsume(
+            channel.BasicConsume(
                 queue: queue,
                 autoAck: false,
-                consumer: _consumer);
+                consumer: consumer);
         }
     }
 }

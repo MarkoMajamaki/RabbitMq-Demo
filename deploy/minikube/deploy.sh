@@ -9,6 +9,9 @@ deploy()
     # Build images into minikube
     eval $(minikube docker-env)
 
+    # Install RabbitMq cluster operator 
+    kubectl rabbitmq install-cluster-operator
+
     # Build services
     sh deploy/build-services.sh
 

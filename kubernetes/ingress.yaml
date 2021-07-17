@@ -10,17 +10,17 @@ spec:
     - host: rabbitmq-demo.com
       http:
         paths:
-        - path: /service1/(.*)
+        - path: /subscriber/(.*)
           pathType: Prefix
           backend:
             service:
-              name: service1
+              name: subscriber
               port:
                 number: 80
-        - path: /service2/(.*)
+        - path: /publisher/(.*)
           pathType: Prefix
           backend:
             service:
-              name: service2
+              name: publisher
               port:
                 number: 80

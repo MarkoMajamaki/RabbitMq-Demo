@@ -25,31 +25,31 @@ namespace Subscriber
         {
             _subscriber.Queue((message) =>
             {
-                _logger.LogDebug(message);
+                _logger.LogInformation(message.ToString());
                 return true;
             }, "simple-queue"); 
 
             _subscriber.Direct((message) =>
             {
-                _logger.LogDebug(message);
+                _logger.LogInformation(message.ToString());
                 return true;
             }, "direct-queue", "direct-exchange", "routingKey.test");
 
             _subscriber.Topic((message) =>
             {
-                _logger.LogDebug(message);
+                _logger.LogInformation(message.ToString());
                 return true;
             }, "topic-queue-1", "topic-exchange", "*.test");
 
             _subscriber.Topic((message) =>
             {
-                _logger.LogDebug(message);
+                _logger.LogInformation(message.ToString());
                 return true;
             }, "topic-queue-2", "topic-exchange", "routingKey.*");
 
             _subscriber.Fanout((message) =>
             {
-                _logger.LogDebug(message);
+                _logger.LogInformation(message.ToString());
                 return true;
             }, "fanout-queue", "fanout-exchange");
 
@@ -57,13 +57,13 @@ namespace Subscriber
 
             _subscriber.Headers((message) =>
             {
-                _logger.LogDebug(message);
+                _logger.LogInformation(message.ToString());
                 return true;
             }, "header-queue", "header-exchange", header, true);
 
             _subscriber.Rpc((message) =>
             {
-                _logger.LogDebug(message);
+                _logger.LogInformation(message.ToString());
                 return "RPC message handled!";
             }, "rpc-queue");
 

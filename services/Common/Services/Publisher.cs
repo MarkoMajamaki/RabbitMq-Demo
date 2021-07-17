@@ -26,7 +26,6 @@ namespace Common
     {
         private IConnectionProvider _connectionProvider;
         private readonly ILogger _logger;
-        private EventingBasicConsumer _consumer;
 
         public Publisher(
             IConnectionProvider connectionProvider,
@@ -138,24 +137,24 @@ namespace Common
         {
             // Get RabbitMQ connection
             IConnection connection = _connectionProvider.Connect();
-            var model = connection.CreateModel();
+            var channel = connection.CreateModel();
             
-            IBasicProperties props = model.CreateBasicProperties();
+            IBasicProperties props = channel.CreateBasicProperties();
 
             // Generate random correlation id
             var correlationId = Guid.NewGuid().ToString();
             props.CorrelationId = correlationId;
 
             // Set response queue name
-            string replyQueueName = model.QueueDeclare().QueueName;
+            string replyQueueName = channel.QueueDeclare().QueueName;
             props.ReplyTo = replyQueueName;
 
             // Response message queue
             TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
 
             // Listen message received to response queue
-            _consumer = new EventingBasicConsumer(model);
-            _consumer.Received += (model, ea) =>
+            var consumer = new EventingBasicConsumer(channel);
+            consumer.Received += (model, ea) =>
             {
                 var body = ea.Body.ToArray();
                 var response = Encoding.UTF8.GetString(body);
@@ -169,24 +168,26 @@ namespace Common
                 {
                     tcs.SetCanceled();
                 }
+
+                // Close channel
+                channel.Close();
             };
 
             // Start listening reply queue
-            model.BasicConsume(
-                consumer: _consumer,
+            channel.BasicConsume(
+                consumer: consumer,
                 queue: replyQueueName,
                 autoAck: true);
                 
             var body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message));
 
             // Send message
-            model.BasicPublish(
+            channel.BasicPublish(
                 exchange: "",
                 routingKey: queue,
                 basicProperties: props,
                 body: body);
 
-            // Get reseponse from queue
             return await tcs.Task;
         }
 
@@ -205,11 +206,11 @@ namespace Common
             // Get RabbitMQ connection
             IConnection connection = _connectionProvider.Connect();
 
-            using(var model = connection.CreateModel())            
+            using(var channel = connection.CreateModel())            
             {
                 if (exchange != null)
                 {
-                    model.ExchangeDeclare(
+                    channel.ExchangeDeclare(
                         exchange: exchange,
                         type: exchangeType,
                         arguments: new Dictionary<string, object>
@@ -220,7 +221,7 @@ namespace Common
                 }
                 else 
                 {
-                    model.QueueDeclare(
+                    channel.QueueDeclare(
                         routingKey,
                         durable: true,
                         exclusive: false,
@@ -230,12 +231,12 @@ namespace Common
 
                 var body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message));
                 
-                var properties = model.CreateBasicProperties();
+                var properties = channel.CreateBasicProperties();
                 properties.Persistent = true;
                 properties.Headers = headers;
                 properties.Expiration = timeToLive.ToString();
 
-                model.BasicPublish(
+                channel.BasicPublish(
                     exchange: exchange ?? string.Empty,
                     routingKey: routingKey ?? string.Empty,
                     basicProperties: properties,

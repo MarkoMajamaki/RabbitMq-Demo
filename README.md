@@ -1,15 +1,12 @@
 # Demo app for RabbitMq Kubernetes deployment using ASP.NET microservices
 
-**Repo is still under heavy development and some features might not work!**
-
 ## Prerequisites
 
-1. [Install kubectl RabbitMq plugin](https://www.rabbitmq.com/kubernetes/operator/install-operator.html)
-2. Add krew path: export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+[Install kubectl RabbitMq plugin](https://www.rabbitmq.com/kubernetes/operator/install-operator.html)
 
 ## Deploy to Kind
 ```bash
-# Add test DNS (Mac OS)
+# Add test DNS (Mac OS) to hosts fle. Remove other DNS references to rabbitmq-demo.com.
 echo "127.0.0.1 rabbitmq-demo.com" | sudo tee -a /etc/hosts
 
 # Deploy
@@ -24,7 +21,7 @@ sh deploy/kind/deploy.sh destroy
 # Deploy
 sh deploy/minikube/deploy.sh deploy
 
-# Add test DNS (Mac OS) Remove after debug!
+# Add test DNS (Mac OS) to hosts fle. Remove other DNS references to rabbitmq-demo.com . After debug, remove this line from the file, because next time minikube ip is changed.
 echo "$(minikube ip) rabbitmq-demo.com" | sudo tee -a /etc/hosts
 
 # Destroy
@@ -33,7 +30,7 @@ sh deploy/minikube/deploy.sh destroy
 
 ## Deploy with docker compose
 ```bash
-# Add test DNS (Mac OS)
+# Add test DNS (Mac OS) to hosts fle. Remove other DNS references to rabbitmq-demo.com.
 echo "127.0.0.1 rabbitmq-demo.com" | sudo tee -a /etc/hosts
 
 # Build
@@ -69,24 +66,26 @@ kubectl port-forward "service/rabbitmq" 15672
 # Open management console
 http://localhost:15672
 ```
-
 ## Test
 
 ### When run with Visual Studio Code
+Run POST commands to url below using Postman anc check debug terminal
 ```bash
 https://localhost:5000/Message/QueuePublish/test-message
 https://localhost:5000/Message/DirectExchangePublish/test-message
 https://localhost:5000/Message/TopicExchangePublish/test-message
 https://localhost:5000/Message/FanoutExchangePublish/test-message
 https://localhost:5000/Message/HeaderExchangePublish/test-message
+https://localhost:5000/Message/rpc/test-message
 ```
 
 ### When run in local K8S cluster or docker compose
-Check logs from Subscriber microservice and run
+Run POST commands to url below using Postman and check logs from Subscriber pod
 ```bash
-https://rabbitmq-demo.com/publisher/QueuePublish/test-message
-https://rabbitmq-demo.com/publisher/DirectExchangePublish/test-message
-https://rabbitmq-demo.com/publisher/TopicExchangePublish/test-message
-https://rabbitmq-demo.com/publisher/FanoutExchangePublish/test-message
-https://rabbitmq-demo.com/publisher/HeaderExchangePublish/test-message
+http://rabbitmq-demo.com/publisher/message/QueuePublish/test-message
+http://rabbitmq-demo.com/publisher/message/DirectExchangePublish/test-message
+http://rabbitmq-demo.com/publisher/message/TopicExchangePublish/test-message
+http://rabbitmq-demo.com/publisher/message/FanoutExchangePublish/test-message
+http://rabbitmq-demo.com/publisher/message/HeaderExchangePublish/test-message
+http://rabbitmq-demo.com/publisher/message/rpc/test-message
 ```

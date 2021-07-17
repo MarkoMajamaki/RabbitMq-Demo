@@ -2,7 +2,6 @@ using Common;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using RabbitMQ.Client;
 
 namespace Publisher.Controllers
 {

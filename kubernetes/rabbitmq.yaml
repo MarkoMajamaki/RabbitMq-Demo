@@ -6,8 +6,6 @@ metadata:
 data:
   RabbitMq__HostName: "rabbitmq.rabbitmq-demo.svc.cluster.local"
   RabbitMq__Port: "5672"
-  RabbitMq__UserName: "guest"
-  RabbitMq__Password: "guest"
 ---
 apiVersion: rabbitmq.com/v1beta1
 kind: RabbitmqCluster
