@@ -10,15 +10,23 @@ namespace Publisher.Controllers
     public class MessageController : ControllerBase
     {
         private readonly IPublisher _publisher;
+        private readonly IPubSubService _pubSubService;
+        private readonly IRpcService _rpcService;
         private readonly ILogger _logger;
 
         public MessageController(
-            IPublisher publisher, 
-            ILogger<MessageController> logger)
+            IPublisher publisher,
+            ILogger<MessageController> logger,
+            IPubSubService pubSubService, 
+            IRpcService rpcService)
         {
             _publisher = publisher;
             _logger = logger;
+            _pubSubService = pubSubService;
+            _rpcService = rpcService;
         }
+
+        // IPublisher
 
         [HttpPost("QueuePublish/{message}")]
         public void QueuePublish(string message)
@@ -62,6 +70,24 @@ namespace Publisher.Controllers
             var response = await _publisher.Rpc(message, "rpc-queue");
 
             _logger.LogDebug($"Rpc response: {response}");
+        }
+
+        // PubSubService
+
+        [HttpPost("PubSubServicePublish/{message}")]
+        public void PubSubServicePublish(string message)
+        {
+            _pubSubService.Publish(new TestRequest(message), new() {{"message", "send"}});
+        }
+
+        // RpcService
+
+        [HttpPost("RpcServicePublish/{message}")]
+        public async void RpcServicePublish(string message)
+        {
+            TestResponse response = await _rpcService.Invoke<TestResponse>(new TestRequest(message), "rpcservice");
+
+            _logger.LogDebug($"RpcService response: {response.Response}");
         }
     }
 }

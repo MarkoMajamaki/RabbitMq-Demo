@@ -242,7 +242,7 @@ namespace Common
                     basicProperties: properties,
                     body: body);
 
-                _logger.LogDebug($"DirectExchangeProducer.Publish: {message}");
+                _logger.LogDebug($"Publish: {message}");
             }
         }
     }

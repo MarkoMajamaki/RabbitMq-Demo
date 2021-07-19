@@ -12,17 +12,26 @@ namespace Subscriber
     {
         private readonly ILogger<ReceiveMessagesService> _logger;
         private readonly Common.ISubscriber _subscriber;
+        private readonly IPubSubService _pubSubService;
+        private readonly IRpcService _rpcService;
+
 
         public ReceiveMessagesService(
             ILogger<ReceiveMessagesService> logger,
-            Common.ISubscriber subscriber)
+            Common.ISubscriber subscriber,
+            IPubSubService pubSubService, 
+            IRpcService rpcService)
         {
             _logger = logger;
             _subscriber = subscriber;
+            _pubSubService = pubSubService;
+            _rpcService = rpcService;
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            // ISubscriber
+
             _subscriber.Queue((message) =>
             {
                 _logger.LogInformation(message.ToString());
@@ -66,6 +75,18 @@ namespace Subscriber
                 _logger.LogInformation(message.ToString());
                 return "RPC message handled!";
             }, "rpc-queue");
+
+            // PubSubService
+            _pubSubService.Subscribe<TestRequest>(message =>
+            {
+                _logger.LogInformation(message.Message);
+                return Task.FromResult(true);
+            }, new() {{"message", "send"}});
+
+            // RpcService
+            _rpcService.Handle<TestRequest, TestResponse>(message => {
+                return new TestResponse("RPC call response");
+            }, "rpcservice");
 
             return Task.CompletedTask;
         }

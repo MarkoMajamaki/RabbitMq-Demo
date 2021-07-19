@@ -24,6 +24,8 @@ namespace Publisher
             services.Configure<RabbitMqSettings>(Configuration.GetSection("RabbitMq"));  
             services.AddSingleton<IConnectionProvider, ConnectionProvider>();
             services.AddTransient<IPublisher, Common.Publisher>();
+            services.AddTransient<IPubSubService, PubSubService>();
+            services.AddTransient<IRpcService, RpcService>();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>

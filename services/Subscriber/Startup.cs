@@ -30,6 +30,8 @@ namespace Subscriber
             services.Configure<RabbitMqSettings>(Configuration.GetSection("RabbitMq"));  
             services.AddSingleton<IConnectionProvider, ConnectionProvider>();
             services.AddTransient<ISubscriber, Common.Subscriber>();
+            services.AddTransient<IPubSubService, PubSubService>();
+            services.AddTransient<IRpcService, RpcService>();
 
             services.AddHostedService<ReceiveMessagesService>();
 
